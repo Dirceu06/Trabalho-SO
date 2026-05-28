@@ -1,4 +1,4 @@
-Prontos:
-- Prioridade para rodar: g++ -Wall -Wextra -g3 priori.cpp auxiliares.cpp -I. -o output/priori.exe
-- SJF para rodar: g++ -Wall -Wextra -g3 priori.cpp auxiliares.cpp -I. -o output/priori.exe
-- Prioridade: para rodar: g++ -Wall -Wextra -g3 priori.cpp auxiliares.cpp -I. -o output/priori.exe
+para rodar:
+g++ priori.cpp auxiliares.cpp -I. -o output/priori.exe
+g++ rr.cpp     auxiliares.cpp -I. -o output/rr.exe
+g++ sjf.cpp    auxiliares.cpp -I. -o output/sjf.exe
