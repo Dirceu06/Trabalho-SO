@@ -11,7 +11,17 @@ qt_add_executable(projeto-so
     mainwindow.cpp
     mainwindow.h
     mainwindow.ui
+    escalonador.h escalonador.cpp escalonador.ui
+    Escalonador/auxiliares.cpp
+    Escalonador/auxiliares.h
+    Escalonador/base.cpp
+    Escalonador/base.h
+    Escalonador/priori.cpp
+    Escalonador/rr.cpp
+    Escalonador/sjf.cpp
 )
+
+target_include_directories(projeto-so PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Escalonador)
 
 target_link_libraries(projeto-so
     PRIVATE

@@ -110,7 +110,7 @@ int (*sjf_linha(int *tam_retorno))[3] {
     return linha_tempo;
 }
 
-int main() {
+/*int main() {
     int tam;
     int (*linha)[3] = sjf_linha(&tam);
 
@@ -119,4 +119,4 @@ int main() {
 
     free(linha);
     return 0;
-}
+}*/

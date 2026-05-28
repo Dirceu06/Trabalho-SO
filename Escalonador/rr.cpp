@@ -4,8 +4,6 @@ using namespace std;
 #include <iostream>
 #include <cstdlib>
 
-#define QUANTUM_PADRAO 5
-
 /*
  * Escalonador Round Robin Preemptivo
  * Retorna: array dinâmico int[3] onde cada posição = 1 unidade de tempo
@@ -118,7 +116,7 @@ int (*rr_linha(int quantum, int *tam_retorno))[3] {
     return linha_tempo;
 }
 
-int main() {
+/*int main() {
     int tam;
     int (*linha)[3] = rr_linha(QUANTUM_PADRAO, &tam);
 
@@ -128,4 +126,4 @@ int main() {
 
     free(linha);
     return 0;
-}
+}*/

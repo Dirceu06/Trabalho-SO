@@ -55,6 +55,7 @@ void imprimir_gantt(int (*lt)[3], int tam) {
     printf("     ");
     for (int t = 0; t <= tam; t++) printf("%-3d", t);
     printf("\n");
+    fflush(stdin);
 }
 
 void imprimir_metricas(int (*lt)[3], int tam) {
@@ -75,4 +76,5 @@ void imprimir_metricas(int (*lt)[3], int tam) {
 
     printf("\nTempo médio de resposta : %.2f\n", tempo_medio_turnaround(lt, tam));
     printf("Tempo médio de espera   : %.2f\n",   tempo_medio_espera(lt, tam));
+    fflush(stdin);
 }
