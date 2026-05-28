@@ -5,4 +5,10 @@
 
 int contar_processos(Processo vetor[]);
 
-#endif // AUXILIARES_H
+float tempo_medio_turnaround(int (*lt)[3], int tam);
+float tempo_medio_espera    (int (*lt)[3], int tam);
+
+void imprimir_gantt   (int (*lt)[3], int tam);
+void imprimir_metricas(int (*lt)[3], int tam);
+
+#endif
