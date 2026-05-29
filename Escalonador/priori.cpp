@@ -3,6 +3,7 @@ using namespace std;
 #include "auxiliares.h"
 #include <iostream>
 #include <cstdlib>
+#include "../Memoria/GerenciadorMemoria.h"
 
 /*
  * Escalonador por Prioridade Preemptivo
@@ -12,7 +13,8 @@ using namespace std;
  *   [2] = prioridade do processo
  * *tam_retorno = tamanho total da linha do tempo
  */
-int (*priori_linha(int *tam_retorno))[3] {
+// 1. Assinatura
+int (*priori_linha(int *tam_retorno, GerenciadorMemoria *gm))[3] {
     int contagem = contar_processos(processos);
 
     // Tempo restante de execução por processo
@@ -78,6 +80,13 @@ int (*priori_linha(int *tam_retorno))[3] {
         linha_tempo[tam_linha - 1][1] = fila[idx_melhor][1];  // tempo restante antes de executar
         linha_tempo[tam_linha - 1][2] = fila[idx_melhor][2];
 
+        //acesso à memória
+        if (gm != nullptr) {
+            int proc   = fila[idx_melhor][0];
+            int pagina = unit_tempo % gm->num_paginas(proc);
+            gm->acessar(proc, pagina, unit_tempo);
+        }
+
         // 5. Executa 1 unidade de tempo
         fila[idx_melhor][1]--;
         restante[fila[idx_melhor][0]]--;
@@ -109,14 +118,3 @@ int (*priori_linha(int *tam_retorno))[3] {
     if (tam_retorno) *tam_retorno = tam_linha;
     return linha_tempo;
 }
-
-/*int main() {
-    int tam;
-    int (*linha)[3] = priori_linha(&tam);
-
-    imprimir_gantt(linha, tam);
-    imprimir_metricas(linha, tam);
-
-    free(linha);
-    return 0;
-}*/

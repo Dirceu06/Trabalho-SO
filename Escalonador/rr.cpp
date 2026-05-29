@@ -3,6 +3,7 @@ using namespace std;
 #include "auxiliares.h"
 #include <iostream>
 #include <cstdlib>
+#include "../Memoria/GerenciadorMemoria.h"
 
 /*
  * Escalonador Round Robin Preemptivo
@@ -16,7 +17,8 @@ using namespace std;
  *   Chegadas no instante t são inseridas ANTES do processo preemptado,
  *   seguindo a convenção mais comum dos livros-texto.
  */
-int (*rr_linha(int quantum, int *tam_retorno))[3] {
+// 1. Assinatura
+int (*rr_linha(int quantum, int *tam_retorno, GerenciadorMemoria *gm))[3] {
     int contagem = contar_processos(processos);
 
     int restante[MAX_PROCESSOS];
@@ -96,6 +98,12 @@ int (*rr_linha(int quantum, int *tam_retorno))[3] {
         linha_tempo[tam_linha - 1][1] = restante[proc_atual];
         linha_tempo[tam_linha - 1][2] = processos[proc_atual].prioridade;
 
+        //acesso à memória
+        if (gm != nullptr) {
+            int pagina = unit_tempo % gm->num_paginas(proc_atual);
+            gm->acessar(proc_atual, pagina, unit_tempo);
+        }
+
         // 6. Executa 1 unidade de tempo
         restante[proc_atual]--;
         quantum_usado++;
@@ -115,15 +123,3 @@ int (*rr_linha(int quantum, int *tam_retorno))[3] {
     if (tam_retorno) *tam_retorno = tam_linha;
     return linha_tempo;
 }
-
-/*int main() {
-    int tam;
-    int (*linha)[3] = rr_linha(QUANTUM_PADRAO, &tam);
-
-    printf("=== Round Robin  (quantum = %d) ===\n", QUANTUM_PADRAO);
-    imprimir_gantt(linha, tam);
-    imprimir_metricas(linha, tam);
-
-    free(linha);
-    return 0;
-}*/
