@@ -118,50 +118,53 @@ int (*sjf_linha(int *tam_retorno, GerenciadorMemoria *gm))[3] {
     return linha_tempo;
 }
 
-/*int main() {
-    int contagem = contar_processos(processos);
 
-    // Memória necessária por processo (vem do campo memoria em base.h)
-    int mem_procs[MAX_PROCESSOS];
-    for (int i = 0; i < contagem; i++)
-        mem_procs[i] = processos[i].memoria;
+// int main() {
 
-    int mem_fisica  = 1024;   // MB de RAM física
-    int tam_pagina  = 256;    // MB por página
+//     int contagem = contar_processos(processos);
 
-    // -------------------------------------------------------
-    // FIFO ou LRU: direto
-    // -------------------------------------------------------
-    GerenciadorMemoria gm(mem_fisica, tam_pagina, contagem, mem_procs, Politica::FIFO);
+//     // Memória necessária por processo (vem do campo memoria em base.h)
+//     int mem_procs[MAX_PROCESSOS];
+//     for (int i = 0; i < contagem; i++) mem_procs[i] = processos[i].memoria;
 
-    int tam;
-    int (*linha)[3] = priori_linha(&tam, &gm);   // ou rr_linha / sjf_linha
+//     std::vector<int> mem_vec(mem_procs, mem_procs + contagem);
 
-    imprimir_gantt(linha, tam);
-    imprimir_metricas(linha, tam);
-    printf("Page faults: %d\n", gm.get_page_faults());
+//     int mem_fisica  = 1024;   // MB de RAM física
+//     int tam_pagina  = 256;    // MB por página
 
-    free(linha);
+//     // -------------------------------------------------------
+//     // FIFO ou LRU: direto
+//     // -------------------------------------------------------
+//     GerenciadorMemoria gm(mem_fisica, tam_pagina, contagem, mem_vec, Politica::FIFO);
 
-    // -------------------------------------------------------
-    // ÓTIMO: roda o escalonador sem memória primeiro pra ter
-    // a linha do tempo, depois refaz com gm
-    // -------------------------------------------------------
+//     int tam;
+//     int (*linha)[3] = priori_linha(&tam, &gm);   // ou rr_linha / sjf_linha
 
-    int tam_prev;
-    int (*lt_prev)[3] = priori_linha(&tam_prev, nullptr);  // 1ª passagem sem memória
+//     imprimir_gantt(linha, tam);
+//     imprimir_metricas(linha, tam);
+//     printf("Page faults: %d\n", gm.get_page_faults());
 
-    GerenciadorMemoria gm_ot(mem_fisica, tam_pagina, contagem, mem_procs, Politica::OTIMO);
-    gm_ot.set_linha_tempo(lt_prev, tam_prev);
-    free(lt_prev);
+//     free(linha);
 
-    int (*linha_ot)[3] = priori_linha(&tam_prev, &gm_ot);  // 2ª passagem com memória
+//     // -------------------------------------------------------
+//     // ÓTIMO: roda o escalonador sem memória primeiro pra ter
+//     // a linha do tempo, depois refaz com gm
+//     // -------------------------------------------------------
 
-    imprimir_gantt(linha_ot, tam_prev);
-    imprimir_metricas(linha_ot, tam_prev);
-    printf("Page faults (Ótimo): %d\n", gm_ot.get_page_faults());
+//     int tam_prev;
+//     int (*lt_prev)[3] = priori_linha(&tam_prev, nullptr);  // 1ª passagem sem memória
 
-    free(linha_ot);
+//     GerenciadorMemoria gm_ot(mem_fisica, tam_pagina, contagem, mem_vec, Politica::OTIMO);
+//     gm_ot.set_linha_tempo(lt_prev, tam_prev);
+//     free(lt_prev);
 
-    return 0;
-}*/
+//     int (*linha_ot)[3] = priori_linha(&tam_prev, &gm_ot);  // 2ª passagem com memória
+
+//     imprimir_gantt(linha_ot, tam_prev);
+//     imprimir_metricas(linha_ot, tam_prev);
+//     printf("Page faults (Ótimo): %d\n", gm_ot.get_page_faults());
+
+//     free(linha_ot);
+
+//     return 0;
+// }
