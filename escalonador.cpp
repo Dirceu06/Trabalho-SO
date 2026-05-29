@@ -13,12 +13,22 @@ escalonador::escalonador(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::escalonador)
     , selectedScheduler(SchedulerType::None)
+    , selectedMemoryPolicy(MemoryPolicy::None)
+    , memoriaFisicaMB(-1)
+    , tamPaginaMB(-1)
 {
     ui->setupUi(this);
     ui->buttonRr->setCheckable(true);
     ui->buttonSjf->setCheckable(true);
     ui->buttonPriori->setCheckable(true);
-    ui->lineQuantum->setValidator(new QIntValidator(0, 2147483647, this));
+    ui->buttonFifo->setCheckable(true);
+    ui->buttonLru->setCheckable(true);
+    ui->buttonOtimo->setCheckable(true);
+
+    ui->lineQuantum->setValidator(new QIntValidator(1, 2147483647, this));
+    ui->lineMemFisica->setValidator(new QIntValidator(1, 2147483647, this));
+    ui->lineTamPagina->setValidator(new QIntValidator(1, 2147483647, this));
+
     ui->lineQuantum->setVisible(false);
     ui->labelQuantum->setVisible(false);
     updateButtonHighlight();
@@ -38,15 +48,27 @@ void escalonador::selectScheduler(SchedulerType scheduler)
     updateButtonHighlight();
 }
 
+void escalonador::selectMemoryPolicy(MemoryPolicy policy)
+{
+    selectedMemoryPolicy = policy;
+    updateButtonHighlight();
+}
+
 void escalonador::updateButtonHighlight()
 {
     ui->buttonRr->setStyleSheet(selectedScheduler == SchedulerType::RoundRobin ? selectedButtonStyle : normalButtonStyle);
     ui->buttonSjf->setStyleSheet(selectedScheduler == SchedulerType::SJF ? selectedButtonStyle : normalButtonStyle);
     ui->buttonPriori->setStyleSheet(selectedScheduler == SchedulerType::Prioridade ? selectedButtonStyle : normalButtonStyle);
+    ui->buttonFifo->setStyleSheet(selectedMemoryPolicy == MemoryPolicy::FIFO ? selectedButtonStyle : normalButtonStyle);
+    ui->buttonLru->setStyleSheet(selectedMemoryPolicy == MemoryPolicy::LRU ? selectedButtonStyle : normalButtonStyle);
+    ui->buttonOtimo->setStyleSheet(selectedMemoryPolicy == MemoryPolicy::Otimo ? selectedButtonStyle : normalButtonStyle);
 
     ui->buttonRr->setChecked(selectedScheduler == SchedulerType::RoundRobin);
     ui->buttonSjf->setChecked(selectedScheduler == SchedulerType::SJF);
     ui->buttonPriori->setChecked(selectedScheduler == SchedulerType::Prioridade);
+    ui->buttonFifo->setChecked(selectedMemoryPolicy == MemoryPolicy::FIFO);
+    ui->buttonLru->setChecked(selectedMemoryPolicy == MemoryPolicy::LRU);
+    ui->buttonOtimo->setChecked(selectedMemoryPolicy == MemoryPolicy::Otimo);
 }
 
 void escalonador::on_buttonRr_clicked()
@@ -91,8 +113,8 @@ void escalonador::on_buttonGerarRelatorio_clicked()
         return;
     }
 
-    if (selectedScheduler == SchedulerType::RoundRobin && QUANTUM_GLOBAL < 0) {
-        QMessageBox::warning(this, tr("Quantum inválido"), tr("Informe um quantum válido (inteiro não negativo) para Round Robin."));
+    if (selectedScheduler == SchedulerType::RoundRobin && QUANTUM_GLOBAL <= 0) {
+        QMessageBox::warning(this, tr("Quantum inválido"), tr("Informe um quantum válido (inteiro maior que zero) para Round Robin."));
         return;
     }
 
@@ -124,3 +146,51 @@ void escalonador::on_buttonGerarRelatorio_clicked()
     }
 }
 
+void escalonador::on_buttonFifo_clicked()
+{
+    selectMemoryPolicy(MemoryPolicy::FIFO);
+}
+
+void escalonador::on_buttonLru_clicked()
+{
+    selectMemoryPolicy(MemoryPolicy::LRU);
+}
+
+void escalonador::on_buttonOtimo_clicked()
+{
+    selectMemoryPolicy(MemoryPolicy::Otimo);
+}
+
+void escalonador::on_lineMemFisica_textChanged(const QString &arg1)
+{
+    if (arg1.isEmpty()) {
+        memoriaFisicaMB = -1;
+        return;
+    }
+
+    bool ok = false;
+    int valor = arg1.toInt(&ok);
+    if (!ok || valor <= 0) {
+        memoriaFisicaMB = -1;
+        return;
+    }
+
+    memoriaFisicaMB = valor;
+}
+
+void escalonador::on_lineTamPagina_textChanged(const QString &arg1)
+{
+    if (arg1.isEmpty()) {
+        tamPaginaMB = -1;
+        return;
+    }
+
+    bool ok = false;
+    int valor = arg1.toInt(&ok);
+    if (!ok || valor <= 0) {
+        tamPaginaMB = -1;
+        return;
+    }
+
+    tamPaginaMB = valor;
+}

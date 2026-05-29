@@ -19,7 +19,12 @@ private slots:
     void on_buttonRr_clicked();
     void on_buttonSjf_clicked();
     void on_buttonPriori_clicked();
+    void on_buttonFifo_clicked();
+    void on_buttonLru_clicked();
+    void on_buttonOtimo_clicked();
     void on_lineQuantum_textChanged(const QString &arg1);
+    void on_lineMemFisica_textChanged(const QString &arg1);
+    void on_lineTamPagina_textChanged(const QString &arg1);
     void on_buttonGerarRelatorio_clicked();
 
 private:
@@ -30,11 +35,22 @@ private:
         Prioridade
     };
 
+    enum class MemoryPolicy {
+        None,
+        FIFO,
+        LRU,
+        Otimo
+    };
+
     void selectScheduler(SchedulerType scheduler);
+    void selectMemoryPolicy(MemoryPolicy policy);
     void updateButtonHighlight();
 
     Ui::escalonador *ui;
     SchedulerType selectedScheduler;
+    MemoryPolicy selectedMemoryPolicy;
+    int memoriaFisicaMB;
+    int tamPaginaMB;
 };
 
 #endif // ESCALONADOR_H

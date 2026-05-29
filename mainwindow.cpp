@@ -2,9 +2,11 @@
 #include "ui_mainwindow.h"
 #include "escalonador.h"
 
+#include <QCoreApplication>
 #include <QFile>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QTimer>
 #include <QStringList>
 
 MainWindow::MainWindow(QWidget *parent)
@@ -116,5 +118,9 @@ void MainWindow::on_selectCsv_clicked()
 
     escalonador *janelaEscalonador = new escalonador(this);
     janelaEscalonador->setAttribute(Qt::WA_DeleteOnClose);
+    connect(janelaEscalonador, &QObject::destroyed, qApp, &QCoreApplication::quit);
+    connect(janelaEscalonador, &QObject::destroyed, this, &MainWindow::close);
     janelaEscalonador->show();
+
+    QTimer::singleShot(500, this, &MainWindow::hide);
 }

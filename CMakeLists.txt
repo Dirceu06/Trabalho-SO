@@ -19,9 +19,15 @@ qt_add_executable(projeto-so
     Escalonador/priori.cpp
     Escalonador/rr.cpp
     Escalonador/sjf.cpp
+    Memoria/GerenciadorMemoria.cpp
+    Memoria/GerenciadorMemoria.h
+    relatoriowindow.h relatoriowindow.cpp relatoriowindow.ui
 )
 
-target_include_directories(projeto-so PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Escalonador)
+target_include_directories(projeto-so PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/Escalonador
+    ${CMAKE_CURRENT_SOURCE_DIR}/Memoria
+)
 
 target_link_libraries(projeto-so
     PRIVATE
