@@ -82,6 +82,8 @@ public:
     // --------------------------------------------------------
     int  get_page_faults()  const { return page_faults_total; }
     int  get_num_frames()   const { return static_cast<int>(frames.size()); }
+    int  get_tam_pagina()   const { return tam_pagina_mb; }
+    Politica get_politica() const { return politica; }
     const std::vector<Frame>& get_frames() const { return frames; }
 
     // Número de páginas que um processo ocupa

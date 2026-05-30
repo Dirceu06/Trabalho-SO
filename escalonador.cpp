@@ -1,21 +1,25 @@
 #include "escalonador.h"
 #include "ui_escalonador.h"
 #include "Escalonador/auxiliares.h"
-
+#include "relatoriowindow.h"
+#include "mainwindow.h"
+ 
 #include <QIntValidator>
 #include <QMessageBox>
 #include <QPushButton>
+#include <QTimer>
+#include <vector>
 
 static const char *selectedButtonStyle = "background-color: #0078d7; color: white;";
 static const char *normalButtonStyle = "";
 
-escalonador::escalonador(QWidget *parent)
-    : QMainWindow(parent)
-    , ui(new Ui::escalonador)
-    , selectedScheduler(SchedulerType::None)
-    , selectedMemoryPolicy(MemoryPolicy::None)
-    , memoriaFisicaMB(-1)
-    , tamPaginaMB(-1)
+escalonador::escalonador(QWidget *parent):
+    QMainWindow(parent),
+    ui(new Ui::escalonador),
+    selectedScheduler(SchedulerType::None),
+    selectedMemoryPolicy(MemoryPolicy::None),
+    memoriaFisicaMB(-1),
+    tamPaginaMB(-1)
 {
     ui->setupUi(this);
     ui->buttonRr->setCheckable(true);
@@ -76,18 +80,15 @@ void escalonador::on_buttonRr_clicked()
     selectScheduler(SchedulerType::RoundRobin);
 }
 
-
 void escalonador::on_buttonSjf_clicked()
 {
     selectScheduler(SchedulerType::SJF);
 }
 
-
 void escalonador::on_buttonPriori_clicked()
 {
     selectScheduler(SchedulerType::Prioridade);
 }
-
 
 void escalonador::on_lineQuantum_textChanged(const QString &arg1)
 {
@@ -108,42 +109,115 @@ void escalonador::on_lineQuantum_textChanged(const QString &arg1)
 
 void escalonador::on_buttonGerarRelatorio_clicked()
 {
+    // validando
     if (selectedScheduler == SchedulerType::None) {
-        QMessageBox::warning(this, tr("Escalonador não selecionado"), tr("Selecione um escalonador antes de gerar o relatório."));
+        QMessageBox::warning(this, tr("Escalonador não selecionado"),
+                             tr("Selecione um algoritmo de escalonamento."));
         return;
     }
 
     if (selectedScheduler == SchedulerType::RoundRobin && QUANTUM_GLOBAL <= 0) {
-        QMessageBox::warning(this, tr("Quantum inválido"), tr("Informe um quantum válido (inteiro maior que zero) para Round Robin."));
+        QMessageBox::warning(this, tr("Quantum inválido"),
+                             tr("Informe um quantum válido (inteiro maior que zero) para Round Robin."));
         return;
     }
 
-    int tam = 0;
+    if (selectedMemoryPolicy == MemoryPolicy::None) {
+        QMessageBox::warning(this, tr("Política não selecionada"),
+                             tr("Selecione uma política de substituição de páginas (FIFO, LRU ou Ótimo)."));
+        return;
+    }
+
+    if (memoriaFisicaMB <= 0) {
+        QMessageBox::warning(this, tr("Memória física inválida"),
+                             tr("Informe um valor válido para a Memória Física (MB)."));
+        return;
+    }
+
+    if (tamPaginaMB <= 0) {
+        QMessageBox::warning(this, tr("Tamanho de página inválido"),
+                             tr("Informe um valor válido para o Tamanho da Página (MB)."));
+        return;
+    }
+
+    if (tamPaginaMB > memoriaFisicaMB) {
+        QMessageBox::warning(this, tr("Configuração inválida"),
+                             tr("O tamanho da página não pode ser maior que a memória física."));
+        return;
+    }
+
+    // montando vetor de memória dos processos
+    int numProcs = contar_processos(processos);
+    std::vector<int> memProcs;
+    memProcs.reserve(numProcs);
+    for (int i = 0; i < numProcs; i++)
+        memProcs.push_back(processos[i].memoria);
+
+    // convertendo política
+    Politica pol;
+    switch (selectedMemoryPolicy) {
+    case MemoryPolicy::FIFO: pol = Politica::FIFO; break;
+    case MemoryPolicy::LRU: pol = Politica::LRU; break;
+    case MemoryPolicy::Otimo: pol = Politica::OTIMO; break;
+    default: pol = Politica::FIFO; break;
+    }
+
+    // pré-execução pro algoritmo Ótimo
+    // o Ótimo precisa da linha do tempo futura antes de rodar
+    // executa o escalonador sem memória pra obter essa linha
+    int (*lt_preview)[3] = nullptr;
+    int  tam_preview = 0;
+
+    if (pol == Politica::OTIMO) {
+        switch (selectedScheduler) {
+        case SchedulerType::RoundRobin:
+            lt_preview = rr_linha(QUANTUM_GLOBAL, &tam_preview, nullptr); break;
+        case SchedulerType::SJF:
+            lt_preview = sjf_linha(&tam_preview, nullptr); break;
+        case SchedulerType::Prioridade:
+            lt_preview = priori_linha(&tam_preview, nullptr); break;
+        default: break;
+        }
+    }
+
+    // criando o gerenciador de memoria
+    GerenciadorMemoria *gm = new GerenciadorMemoria(
+        memoriaFisicaMB, tamPaginaMB, numProcs, memProcs, pol);
+
+    if (pol == Politica::OTIMO && lt_preview)
+        gm->set_linha_tempo(lt_preview, tam_preview);
+
+    // executando o escalonador com o gm
+    int  tam = 0;
     int (*linha)[3] = nullptr;
 
     switch (selectedScheduler) {
     case SchedulerType::RoundRobin:
-        linha = rr_linha(QUANTUM_GLOBAL, &tam);
-        printf("=== Round Robin  (quantum = %d) ===\n", QUANTUM_GLOBAL);
-        break;
-
+        linha = rr_linha(QUANTUM_GLOBAL, &tam, gm); break;
     case SchedulerType::SJF:
-        linha = sjf_linha(&tam);
-        break;
-
+        linha = sjf_linha(&tam, gm); break;
     case SchedulerType::Prioridade:
-        linha = priori_linha(&tam);
-        break;
+        linha = priori_linha(&tam, gm); break;
+    default: break;
+    }
 
-    default:
+    if (lt_preview) free(lt_preview);  // preview não é mais necessário
+
+    if (!linha) {
+        delete gm;
+        QMessageBox::critical(this, tr("Erro"), tr("Falha ao executar a simulação."));
         return;
     }
 
-    if (linha) {
-        imprimir_gantt(linha, tam);
-        imprimir_metricas(linha, tam);
-        free(linha);
-    }
+    // abrindo a janela de relatório
+    // passa memProcs pra que a relatorioWindow possa clonar o gm
+    // e calcular page faults por processo e por tick (Gantt).
+    relatorioWindow *rel = new relatorioWindow(linha, tam, gm, memProcs, this);
+    rel->setAttribute(Qt::WA_DeleteOnClose);
+    connect(rel, &QObject::destroyed, qApp, &QCoreApplication::quit);
+    rel->show();
+
+    QTimer::singleShot(250, this, &escalonador::hide);
 }
 
 void escalonador::on_buttonFifo_clicked()
