@@ -37,7 +37,7 @@ int (*sjf_linha(int *tam_retorno, GerenciadorMemoria *gm))[3] {
 
     while (concluidos < contagem) {
 
-        // 1. Adiciona processos que chegaram nesta unidade à fila de prontos
+        //Adiciona processos que chegaram nesta unidade à fila de prontos
         for (int i = 0; i < contagem; i++) {
             if (!concluido[i] && processos[i].tempo_chegada == unit_tempo) {
                 tam_fila++;
@@ -48,7 +48,7 @@ int (*sjf_linha(int *tam_retorno, GerenciadorMemoria *gm))[3] {
             }
         }
 
-        // 2. CPU ociosa
+        //CPU ociosa
         if (tam_fila == 0) {
             tam_linha++;
             linha_tempo = (int (*)[3])realloc(linha_tempo, tam_linha * sizeof(int[3]));
@@ -59,8 +59,8 @@ int (*sjf_linha(int *tam_retorno, GerenciadorMemoria *gm))[3] {
             continue;
         }
 
-        // 3. Escolhe o processo com menor tempo RESTANTE (SRTF)
-        //    Desempate: menor tempo_chegada (FCFS entre iguais)
+        //escolhe o processo com menor tempo RESTANTE (SRTF)
+        //desempate: menor tempo_chegada (FCFS entre iguais)
         int idx_melhor = 0;
         for (int i = 1; i < tam_fila; i++) {
             bool menor_restante = fila[i][1] < fila[idx_melhor][1];
@@ -73,7 +73,7 @@ int (*sjf_linha(int *tam_retorno, GerenciadorMemoria *gm))[3] {
                 idx_melhor = i;
         }
 
-        // 4. Registra na linha do tempo
+        //registra na linha do tempo
         tam_linha++;
         linha_tempo = (int (*)[3])realloc(linha_tempo, tam_linha * sizeof(int[3]));
         linha_tempo[tam_linha - 1][0] = fila[idx_melhor][0];
@@ -87,11 +87,11 @@ int (*sjf_linha(int *tam_retorno, GerenciadorMemoria *gm))[3] {
             gm->acessar(proc, pagina, unit_tempo);
         }
 
-        // 5. Executa 1 unidade de tempo
+        //executa 1 unidade de tempo
         fila[idx_melhor][1]--;
         restante[fila[idx_melhor][0]]--;
 
-        // 6. Processo terminou? Remove da fila
+        //Processo terminou? Remove da fila
         if (fila[idx_melhor][1] == 0) {
             concluido[fila[idx_melhor][0]] = true;
             concluidos++;

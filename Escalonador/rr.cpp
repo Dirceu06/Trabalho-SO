@@ -17,7 +17,6 @@ using namespace std;
  *   Chegadas no instante t são inseridas ANTES do processo preemptado,
  *   seguindo a convenção mais comum dos livros-texto.
  */
-// 1. Assinatura
 int (*rr_linha(int quantum, int *tam_retorno, GerenciadorMemoria *gm))[3] {
     int contagem = contar_processos(processos);
 
@@ -28,22 +27,21 @@ int (*rr_linha(int quantum, int *tam_retorno, GerenciadorMemoria *gm))[3] {
         concluido[i] = false;
     }
 
-    // Fila de prontos: FIFO de índices de processo
+    //fila de prontos: FIFO de índices de processo
     int *fila = NULL;
     int tam_fila = 0;
 
-    // Linha do tempo de retorno
     int (*linha_tempo)[3] = NULL;
     int tam_linha = 0;
 
     int unit_tempo   = 0;
     int concluidos   = 0;
-    int proc_atual   = -1;   // índice do processo na CPU (-1 = ociosa)
+    int proc_atual   = -1; 
     int quantum_usado = 0;   // fatia já consumida pelo proc_atual
 
     while (concluidos < contagem) {
 
-        // 1. Enfileira processos que chegaram nesta unidade de tempo
+        //Enfileira processos que chegaram nesta unidade de tempo
         for (int i = 0; i < contagem; i++) {
             if (!concluido[i] && processos[i].tempo_chegada == unit_tempo) {
                 tam_fila++;
@@ -52,7 +50,7 @@ int (*rr_linha(int quantum, int *tam_retorno, GerenciadorMemoria *gm))[3] {
             }
         }
 
-        // 2. Preempção por esgotamento do quantum
+        //Preempção por esgotamento do quantum
         //    (processo não terminou, volta para o fim da fila)
         if (proc_atual != -1 && quantum_usado == quantum) {
             tam_fila++;
@@ -62,7 +60,7 @@ int (*rr_linha(int quantum, int *tam_retorno, GerenciadorMemoria *gm))[3] {
             quantum_usado = 0;
         }
 
-        // 3. Seleciona próximo processo da fila (FIFO)
+        //Seleciona próximo processo da fila (FIFO)
         if (proc_atual == -1 && tam_fila > 0) {
             proc_atual = fila[0];
 
@@ -80,7 +78,7 @@ int (*rr_linha(int quantum, int *tam_retorno, GerenciadorMemoria *gm))[3] {
             quantum_usado = 0;
         }
 
-        // 4. CPU ociosa (nenhum processo pronto)
+        //CPU ociosa
         if (proc_atual == -1) {
             tam_linha++;
             linha_tempo = (int (*)[3])realloc(linha_tempo, tam_linha * sizeof(int[3]));
@@ -91,7 +89,7 @@ int (*rr_linha(int quantum, int *tam_retorno, GerenciadorMemoria *gm))[3] {
             continue;
         }
 
-        // 5. Registra na linha do tempo (tempo restante ANTES de executar)
+        //Registra na linha do tempo (tempo restante ANTES de executar)
         tam_linha++;
         linha_tempo = (int (*)[3])realloc(linha_tempo, tam_linha * sizeof(int[3]));
         linha_tempo[tam_linha - 1][0] = proc_atual;
@@ -104,11 +102,11 @@ int (*rr_linha(int quantum, int *tam_retorno, GerenciadorMemoria *gm))[3] {
             gm->acessar(proc_atual, pagina, unit_tempo);
         }
 
-        // 6. Executa 1 unidade de tempo
+        //Executa 1 unidade de tempo
         restante[proc_atual]--;
         quantum_usado++;
 
-        // 7. Processo terminou?
+        //Processo terminou?
         if (restante[proc_atual] == 0) {
             concluido[proc_atual] = true;
             concluidos++;
