@@ -26,8 +26,6 @@
 - [Algoritmos Implementados](#algoritmos-implementados)
 - [Interface Gráfica](#interface-gráfica)
 - [Relatório de Saída](#relatório-de-saída)
-- [Critérios de Avaliação](#critérios-de-avaliação)
-- [Testes Isolados](#testes-isolados)
 
 ---
 
