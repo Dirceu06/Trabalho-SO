@@ -11,6 +11,7 @@ namespace Ui {
     class relatorioWindow;
 }
 
+// ── Gantt ──────────────────────────────────────────────────────────────────
 class GanttWidget : public QWidget
 {
     Q_OBJECT
@@ -27,7 +28,7 @@ private:
     int  (*linhaTempo)[3] = nullptr;
     int  tam              = 0;
     int  numProcs         = 0;
-    std::vector<bool> faultPorTick; // faultPorTick[t] = true se teve PF no tick t
+    std::vector<bool> faultPorTick;
 
     static const QColor CORES_PROC[10];
     static const int    CELL_W      = 32;
@@ -36,15 +37,41 @@ private:
     static const int    MARGIN_TOP  = 24;
 };
 
+// ── Fila de Prontos ────────────────────────────────────────────────────────
+// filaEstados[t] = lista de índices de processo na fila de prontos no tick t
+//   (processo em execução NÃO entra na lista — só os que aguardam)
+class QueueWidget : public QWidget
+{
+    Q_OBJECT
+public:
+    explicit QueueWidget(QWidget *parent = nullptr);
+
+    // filaEstados: para cada tick t, quais processos estão na ready queue
+    void setDados(const std::vector<std::vector<int>> &filaEstados,
+                  int tam, int numProcs);
+
+protected:
+    void paintEvent(QPaintEvent *event) override;
+
+private:
+    std::vector<std::vector<int>> filaEstados; // [tick] → {proc0, proc1, ...}
+    int tam      = 0;
+    int numProcs = 0;
+
+    static const QColor CORES_PROC[10]; // compartilha paleta com GanttWidget
+    static const int    CELL_W      = 32;
+    static const int    CELL_H      = 24;
+    static const int    MARGIN_LEFT = 50;
+    static const int    MARGIN_TOP  = 20;
+    static const int    MAX_FILA    = 10; // linhas máximas da fila
+};
+
+// ── Janela de Relatório ────────────────────────────────────────────────────
 class relatorioWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    // linha: linha do tempo gerada pelo escalonador
-    // tam: tamanho da linha do tempo
-    // gm: GerenciadorMemoria
-    // memProcs: vetor com memoria de cada processo em MB (pro clone)
     explicit relatorioWindow(int (*linha)[3], int tam,
                              GerenciadorMemoria *gm,
                              const std::vector<int> &memProcs,
@@ -61,16 +88,17 @@ private:
     int  tamLinha;
     GerenciadorMemoria *gerMem;
 
-    // faultPorTick[t] = true se houve page fault no tick t
     std::vector<bool>  faultPorTick;
-    // faultsPorProc[p] = total de page faults do processo p
     std::vector<int>   faultsPorProc;
 
-    GanttWidget *ganttWidget;
+    GanttWidget  *ganttWidget;
+    QueueWidget  *queueWidget;
 
-    // roda um clone do GerenciadorMemoria pra coletar faults por tick/proc
+    // estados da fila de prontos por tick
+    std::vector<std::vector<int>> filaEstados;
+
     void coletarFaults(const std::vector<int> &memProcs);
-
+    void reconstruirFila();   // reconstrói filaEstados a partir de linhaTempo
     void preencherTabela();
     void preencherLabels();
 };
