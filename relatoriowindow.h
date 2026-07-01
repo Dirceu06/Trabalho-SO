@@ -8,10 +8,10 @@
 #include "Escalonador/base.h"
 
 namespace Ui {
-    class relatorioWindow;
+class relatorioWindow;
 }
 
-// ── Gantt ──────────────────────────────────────────────────────────────────
+// Gantt
 class GanttWidget : public QWidget
 {
     Q_OBJECT
@@ -37,16 +37,15 @@ private:
     static const int    MARGIN_TOP  = 24;
 };
 
-// ── Fila de Prontos ────────────────────────────────────────────────────────
+// Fila de Prontos
 // filaEstados[t] = lista de índices de processo na fila de prontos no tick t
-//   (processo em execução NÃO entra na lista — só os que aguardam)
+//   (processo em execução nao entra na lista, só os que aguardam)
 class QueueWidget : public QWidget
 {
     Q_OBJECT
 public:
     explicit QueueWidget(QWidget *parent = nullptr);
 
-    // filaEstados: para cada tick t, quais processos estão na ready queue
     void setDados(const std::vector<std::vector<int>> &filaEstados,
                   int tam, int numProcs);
 
@@ -54,19 +53,19 @@ protected:
     void paintEvent(QPaintEvent *event) override;
 
 private:
-    std::vector<std::vector<int>> filaEstados; // [tick] → {proc0, proc1, ...}
+    std::vector<std::vector<int>> filaEstados;
     int tam      = 0;
     int numProcs = 0;
 
-    static const QColor CORES_PROC[10]; // compartilha paleta com GanttWidget
+    static const QColor CORES_PROC[10];
     static const int    CELL_W      = 32;
     static const int    CELL_H      = 24;
     static const int    MARGIN_LEFT = 50;
     static const int    MARGIN_TOP  = 20;
-    static const int    MAX_FILA    = 10; // linhas máximas da fila
+    static const int    MAX_FILA    = 10;
 };
 
-// ── Janela de Relatório ────────────────────────────────────────────────────
+// Janela de Relatório
 class relatorioWindow : public QMainWindow
 {
     Q_OBJECT
@@ -94,11 +93,10 @@ private:
     GanttWidget  *ganttWidget;
     QueueWidget  *queueWidget;
 
-    // estados da fila de prontos por tick
-    std::vector<std::vector<int>> filaEstados;
+    std::vector<std::vector<int>> filaEstados; // [tick] -> {proc0, proc1, ...}
 
     void coletarFaults(const std::vector<int> &memProcs);
-    void reconstruirFila();   // reconstrói filaEstados a partir de linhaTempo
+    void reconstruirFila();
     void preencherTabela();
     void preencherLabels();
 };
