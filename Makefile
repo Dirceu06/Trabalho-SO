@@ -4,7 +4,8 @@ BUILD := build
 CXX := g++
 CXXFLAGS := -std=c++17 -Wall -Wextra -O2
 
-QT_DIR   := C:/Qt/6.11.1/mingw_64 # modifique pro diretório de instalação do Qt no seu sistema
+# modifique pro diretório de instalação do Qt no seu sistema
+QT_DIR   := C:/Qt/6.11.1/mingw_64
 
 QT_INC   := -I$(QT_DIR)/include \
              -I$(QT_DIR)/include/QtCore \
@@ -18,6 +19,11 @@ QT_LIBS  := -L$(QT_DIR)/lib \
 
 MOC      := $(QT_DIR)/bin/moc.exe
 UIC      := $(QT_DIR)/bin/uic.exe
+
+# Força o uso do cmd.exe como shell, independente do que estiver no PATH
+# (evita conflito com sh.exe de outras instalações, ex: w64devkit/raylib)
+SHELL      := cmd.exe
+.SHELLFLAGS := /C
 
 SRCS := main.cpp \
         mainwindow.cpp \
@@ -47,7 +53,7 @@ ALL_CXXFLAGS := $(CXXFLAGS) $(QT_INC) -I. -IEscalonador -IMemoria -I$(BUILD)
 all: $(TARGET)
 
 run: all
-	PATH="$(QT_DIR)/bin:$$PATH" ./$(TARGET)
+	set "PATH=$(subst /,\,$(QT_DIR))\bin;%PATH%" && $(TARGET)
 
 $(TARGET): $(ALL_OBJS)
 	$(CXX) $(ALL_CXXFLAGS) -o $@ $^ $(QT_LIBS)
@@ -89,7 +95,7 @@ $(BUILD)/moc_relatoriowindow.cpp: relatoriowindow.h $(UI_HEADERS)
 	$(MOC) $(QT_INC) -I$(BUILD) $< -o $@
 
 clean:
-	rd /s /q $(BUILD)
+	if exist "$(BUILD)" rd /s /q "$(BUILD)"
 
 mrproper: clean
-	del /f $(TARGET)
+	if exist "$(TARGET)" del /f "$(TARGET)"
